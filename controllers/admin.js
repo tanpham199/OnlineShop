@@ -1,3 +1,4 @@
+const { deleteById } = require('../models/product');
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
@@ -41,6 +42,12 @@ exports.postEditProduct = (req, res, next) => {
     const { productId, title, price, imageUrl, description } = req.body;
     const updatedProduct = new Product(productId, title, imageUrl, price, description);
     updatedProduct.save();
+    res.redirect('/admin/products');
+};
+
+exports.postDeleteProduct = (req, res, next) => {
+    const productId = req.body.productId;
+    Product.deleteById(productId);
     res.redirect('/admin/products');
 };
 
