@@ -1,4 +1,3 @@
-const { deleteById } = require('../models/product');
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
@@ -12,7 +11,7 @@ exports.getAddProduct = (req, res, next) => {
 exports.postAddProduct = async (req, res, next) => {
     const { title, imageUrl, price, description } = req.body;
     try {
-        await Product.create({
+        await req.user.createProduct({
             title: title,
             imageUrl: imageUrl,
             price: price,
@@ -30,7 +29,9 @@ exports.getEditProduct = async (req, res, next) => {
         return res.redirect('/');
     }
     try {
-        const product = await Product.findByPk(req.params.productId);
+        // const product = await Product.findByPk(req.params.productId); // normal quey without binding user
+        const products = await req.user.getProducts({ where: { id: req.params.productId } }); // this returns an array
+        const product = products[0]; // we know for sure that result array only has one item
         if (!product) {
             return res.render('404');
         }
@@ -63,7 +64,8 @@ exports.postEditProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
     try {
-        const products = await Product.findAll();
+        // const products = await Product.findAll();
+        const products = await req.user.getProducts();
         res.render('admin/products', {
             prods: products,
             pageTitle: 'Admin Products',
