@@ -55,30 +55,42 @@ exports.getCart = async (req, res, next) => {
     }
 };
 
+const addProductHandler = async (cart, prodId, quantity) => {
+    try {
+        const product = await Product.findByPk(prodId);
+        await cart.addProduct(product, { through: { quantity: quantity } });
+    } catch (err) {
+        console.log(err);
+    }
+};
+
 exports.postCart = async (req, res, next) => {
     const prodId = req.body.productId;
     try {
         const cart = await req.user.getCart();
         const products = await cart.getProducts({ where: { id: prodId } });
         let product = products.length > 0 ? products[0] : undefined;
-        let newQuantity = 1;
         if (product) {
-            // ...
+            addProductHandler(cart, prodId, product.cartItem.quantity + 1);
+            return res.redirect('/cart');
         }
-        product = await Product.findByPk(prodId);
-        await cart.addProduct(product, { through: { quantity: newQuantity } });
+        addProductHandler(cart, prodId, 1);
         res.redirect('/cart');
     } catch (err) {
         console.log(err);
     }
 };
 
-exports.postCartDeleteProduct = (req, res, next) => {
+exports.postCartDeleteProduct = async (req, res, next) => {
     const prodId = req.body.productId;
-    Product.findById(prodId, (product) => {
-        Cart.deleteProduct(prodId, product.price);
+    try {
+        const cart = await req.user.getCart();
+        const products = await cart.getProducts({ where: { id: prodId } });
+        await products[0].cartItem.destroy();
         res.redirect('/cart');
-    });
+    } catch (err) {
+        console.log(err);
+    }
 };
 
 exports.getOrders = (req, res, next) => {
