@@ -1,26 +1,40 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../util/database');
+const mongodb = require('mongodb');
+const getDb = require('../util/database').getDb;
 
-const Product = sequelize.define('products', {
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        allowNull: false,
-        primaryKey: true,
-    },
-    title: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    },
-    price: {
-        type: Sequelize.DOUBLE,
-        allowNull: false,
-    },
-    imageUrl: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    },
-    description: Sequelize.STRING,
-});
+class Product {
+    constructor(title, price, imageUrl, description) {
+        this.title = title;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.description = description;
+    }
+
+    async save() {
+        try {
+            return await getDb().collection('products').insertOne(this);
+        } catch {
+            console.log(err);
+        }
+    }
+
+    static async fetchAll() {
+        try {
+            return await getDb().collection('products').find().toArray(); // find returns a cursor (an object to loop through collection step by step), not a promise
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    static async findById(prodId) {
+        try {
+            return await getDb()
+                .collection('products')
+                .find({ _id: new mongodb.ObjectID(prodId) })
+                .next();
+        } catch (err) {
+            console.log(err);
+        }
+    }
+}
 
 module.exports = Product;

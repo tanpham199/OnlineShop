@@ -2,7 +2,7 @@ const Product = require('../models/product');
 
 exports.getProducts = async (req, res, next) => {
     try {
-        const products = await Product.findAll();
+        const products = await Product.fetchAll();
         res.render('shop/product-list', {
             prods: products,
             pageTitle: 'All Products',
@@ -15,8 +15,7 @@ exports.getProducts = async (req, res, next) => {
 
 exports.getProduct = async (req, res, next) => {
     try {
-        // const product = await Product.findAll({ where: { id: req.params.productId } }); // product would be an array now
-        const product = await Product.findByPk(req.params.productId);
+        const product = await Product.findById(req.params.productId);
         res.render('shop/product-detail', {
             product: product,
             pageTitle: product.title,
@@ -29,7 +28,8 @@ exports.getProduct = async (req, res, next) => {
 
 exports.getIndex = async (req, res, next) => {
     try {
-        const products = await Product.findAll();
+        const products = await Product.fetchAll();
+        console.log(products);
         res.render('shop/index', {
             prods: products,
             pageTitle: 'Shop',
