@@ -6,6 +6,8 @@ const errorController = require('./controllers/error');
 const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 
+const User = require('./models/user');
+
 const mongoConnect = require('./util/database').mongoConnect;
 
 const app = express();
@@ -16,13 +18,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(async (req, res, next) => {
-    // try {
-    //     const user = await User.findByPk(1);
-    //     req.user = user;
-    next();
-    // } catch (err) {
-    //     console.log(err);
-    // }
+    try {
+        const user = await User.findById('601ecf00563ab377623f96e5');
+        req.user = new User(user.name, user.email, user.cart, user._id);
+        next();
+    } catch (err) {
+        console.log(err);
+    }
 });
 
 app.use('/admin', adminRoutes);

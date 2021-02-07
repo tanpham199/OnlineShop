@@ -1,54 +1,42 @@
 const mongodb = require('mongodb');
 const getDb = require('../util/database').getDb;
 
+const ObjectId = mongodb.ObjectId;
+
 class Product {
-    constructor(title, price, imageUrl, description, id) {
+    constructor(title, price, imageUrl, description, id, userId) {
         this.title = title;
         this.price = price;
         this.imageUrl = imageUrl;
         this.description = description;
-        this._id = id ? new mongodb.ObjectID(id) : null;
+        this._id = id ? new ObjectId(id) : null;
+        this.userId = userId;
     }
 
-    async save() {
-        try {
-            return this._id
-                ? await getDb()
-                      .collection('products')
-                      .updateOne({ _id: new mongodb.ObjectID(this._id) }, { $set: this }) // this is an object
-                : await getDb().collection('products').insertOne(this);
-        } catch {
-            console.log(err);
-        }
+    save() {
+        return this._id
+            ? getDb()
+                  .collection('products')
+                  .updateOne({ _id: new ObjectId(this._id) }, { $set: this }) // this is an object
+            : getDb().collection('products').insertOne(this);
     }
 
-    static async fetchAll() {
-        try {
-            return await getDb().collection('products').find().toArray(); // find returns a cursor (an object to loop through collection step by step), not a promise
-        } catch (err) {
-            console.log(err);
-        }
+    static fetchAll() {
+        return getDb().collection('products').find().toArray(); // find returns a cursor (an object to loop through collection step by step), not a promise
     }
 
-    static async findById(id) {
-        try {
-            return await getDb()
-                .collection('products')
-                .find({ _id: new mongodb.ObjectID(id) })
-                .next();
-        } catch (err) {
-            console.log(err);
-        }
+    static findById(id) {
+        return getDb()
+            .collection('products')
+            .findOne({ _id: new ObjectId(id) });
+        // .find({ _id: new mongodb.ObjectID(id) })
+        // .next(); // only care about the first (which is also only) element that matches
     }
 
-    static async deleteById(id) {
-        try {
-            return await getDb()
-                .collection('products')
-                .deleteOne({ _id: new mongodb.ObjectID(id) });
-        } catch (err) {
-            console.log(err);
-        }
+    static deleteById(id) {
+        return getDb()
+            .collection('products')
+            .deleteOne({ _id: new ObjectId(id) });
     }
 }
 
