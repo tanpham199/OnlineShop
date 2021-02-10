@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const csrf = require('csurf');
+const flash = require('connect-flash');
 const mongoose = require('mongoose');
 const MongoDbStore = require('connect-mongodb-session')(session);
 
@@ -25,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'my secret', resave: false, saveUninitialized: false, store: store }));
 app.use(csrfProtection);
+app.use(flash());
 app.use(async (req, res, next) => {
     try {
         if (req.session.user) {

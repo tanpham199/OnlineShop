@@ -5,6 +5,7 @@ exports.getLogin = async (req, res, next) => {
     res.render('auth/login', {
         path: '/login',
         pageTitle: 'Login',
+        errorMessage: req.flash('error')[0],
     });
 };
 
@@ -13,6 +14,7 @@ exports.postLogin = async (req, res, next) => {
     try {
         const user = await User.findOne({ email });
         if (!user) {
+            req.flash('error', 'Invalid email or password.');
             return res.redirect('/login');
         }
         if (await bcrypt.compare(password, user.password)) {
@@ -21,6 +23,7 @@ exports.postLogin = async (req, res, next) => {
             await req.session.save(); // interact with sessions might take time, save() to make sure everything is done before calling redirect
             res.redirect('/'); // beside that reason, save() is not needed, all session information is written to database without calling save()
         } else {
+            req.flash('error', 'Invalid email or password.');
             res.redirect('/login');
         }
     } catch (err) {
@@ -38,6 +41,7 @@ exports.getSignup = (req, res, next) => {
     res.render('auth/signup', {
         path: '/signup',
         pageTitle: 'Signup',
+        errorMessage: req.flash('error')[0],
     });
 };
 
@@ -46,7 +50,8 @@ exports.postSignup = async (req, res, next) => {
     try {
         const isExisted = await User.findOne({ email });
         if (isExisted) {
-            return res.redirect('/');
+            req.flash('error', 'Email existed.');
+            return res.redirect('/signup');
         }
         const user = new User({
             email,
