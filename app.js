@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const csrf = require('csurf');
 const mongoose = require('mongoose');
 const MongoDbStore = require('connect-mongodb-session')(session);
 
@@ -14,6 +15,7 @@ const authRoutes = require('./routes/auth');
 const User = require('./models/user');
 
 const app = express();
+const csrfProtection = csrf();
 const store = new MongoDbStore({
     uri: MONGODB_URI,
     collection: 'sessions',
@@ -22,6 +24,7 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'my secret', resave: false, saveUninitialized: false, store: store }));
+app.use(csrfProtection);
 app.use(async (req, res, next) => {
     try {
         if (req.session.user) {
@@ -32,6 +35,12 @@ app.use(async (req, res, next) => {
     } catch (err) {
         console.log(err);
     }
+});
+// every views that are rendered will have these variables
+app.use((req, res, next) => {
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
 });
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
