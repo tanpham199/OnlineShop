@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+const sgMail = require('@sendgrid/mail');
+
+sgMail.setApiKey('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');
 
 exports.getLogin = async (req, res, next) => {
     res.render('auth/login', {
@@ -59,6 +62,13 @@ exports.postSignup = async (req, res, next) => {
             cart: { items: [] },
         });
         await user.save();
+        sgMail.send({
+            to: email,
+            from: 'tanpham1104@gmail.com',
+            subject: 'Welcome On Board',
+            text: 'Testing',
+            html: '<h1>Testing</h1>',
+        });
         res.redirect('/login');
     } catch (err) {
         console.log(err);
