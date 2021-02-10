@@ -45,18 +45,6 @@ mongoose
         useFindAndModify: false,
     })
     .then(() => {
-        User.findOne().then((users) => {
-            if (!users) {
-                const user = new User({
-                    name: 'Tan',
-                    email: 'tanpham1104@gmail.com',
-                    cart: {
-                        items: [],
-                    },
-                });
-                user.save();
-            }
-        });
         app.listen(3000);
     })
     .catch((err) => {
