@@ -10,10 +10,16 @@
         <% if (errorMessage) { %>
         <div class="user-message user-message--error"><%= errorMessage %></div>
         <% } %>
-        <form class="login-form" action="/login" method="POST">
+        <form class="login-form" action="/login" method="POST" novalidate>
             <div class="form-control">
                 <label for="email">Email</label>
-                <input type="email" name="email" id="email" >
+                <input
+                    class="<%= validationErrors.find(e => e.param === 'email') ? 'invalid' : '' %>"
+                    type="email"
+                    name="email"
+                    id="email"
+                    value="<%= enteredEmail %>"
+                >
             </div>
             <div class="form-control">
                 <label for="password">Password</label>

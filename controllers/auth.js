@@ -1,7 +1,9 @@
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const User = require('../models/user');
 const sgMail = require('@sendgrid/mail');
+const { validationResult } = require('express-validator');
+const crypto = require('crypto');
+
+const User = require('../models/user');
 
 sgMail.setApiKey('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');
 
@@ -10,11 +12,23 @@ exports.getLogin = async (req, res, next) => {
         path: '/login',
         pageTitle: 'Login',
         errorMessage: req.flash('error')[0],
+        enteredEmail: '',
+        validationErrors: [],
     });
 };
 
 exports.postLogin = async (req, res, next) => {
     const { email, password } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(422).render('auth/login', {
+            path: '/login',
+            pageTitle: 'Login',
+            errorMessage: errors.array()[0].msg,
+            enteredEmail: email,
+            validationErrors: errors.array(),
+        });
+    }
     try {
         const user = await User.findOne({ email });
         if (!user) {
@@ -46,17 +60,30 @@ exports.getSignup = (req, res, next) => {
         path: '/signup',
         pageTitle: 'Signup',
         errorMessage: req.flash('error')[0],
+        enteredEmail: '',
+        validationErrors: [],
     });
 };
 
 exports.postSignup = async (req, res, next) => {
-    const { email, password, confirmPassword } = req.body;
+    const { email, password } = req.body;
+    const errors = validationResult(req); // an item in array contains all informations about the error (field, msg, ...)
+    if (!errors.isEmpty()) {
+        return res.status(422).render('auth/signup', {
+            path: '/signup',
+            pageTitle: 'Signup',
+            errorMessage:
+                'Please enter ' +
+                errors
+                    .array()
+                    .map((e) => e.msg)
+                    .join(', ') +
+                '.',
+            enteredEmail: email,
+            validationErrors: errors.array(),
+        });
+    }
     try {
-        const isExisted = await User.findOne({ email });
-        if (isExisted) {
-            req.flash('error', 'Email existed.');
-            return res.redirect('/signup');
-        }
         const user = new User({
             email,
             password: await bcrypt.hash(password, 12),
