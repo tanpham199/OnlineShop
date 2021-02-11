@@ -46,6 +46,9 @@ exports.getEditProduct = async (req, res, next) => {
 exports.postEditProduct = async (req, res, next) => {
     const { productId, title, price, imageUrl, description } = req.body;
     try {
+        if ((await Product.findById(productId)).userId.toString() !== req.user._id.toString()) {
+            return res.redirect('/');
+        }
         await Product.findByIdAndUpdate(productId, {
             title,
             price,
@@ -60,7 +63,7 @@ exports.postEditProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
     try {
-        const products = await Product.find();
+        const products = await Product.find({ userId: req.user._id });
         // .select('title price -_id') // only fetch title and price field, exclude _id field (which is automatically fetched by default)
         // .populate('userId'); // populate the reference 'userId'
         // .populate('userId', 'name'); // populate the reference 'userId' and then only select name field
@@ -76,7 +79,7 @@ exports.getProducts = async (req, res, next) => {
 
 exports.postDeleteProduct = async (req, res, next) => {
     try {
-        await Product.findOneAndDelete(req.body.productId);
+        await Product.deleteOne({ _id: req.body.productId, userId: req.user._id });
         res.redirect('/admin/products');
     } catch (err) {
         console.log(err);
