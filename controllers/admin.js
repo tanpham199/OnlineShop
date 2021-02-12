@@ -2,9 +2,6 @@ const { validationResult } = require('express-validator');
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res, next) => {
-    if (!req.session.isLoggedIn) {
-        return res.redirect('/login');
-    }
     res.render('admin/edit-product', {
         pageTitle: 'Add Product',
         path: '/admin/add-product',
@@ -21,7 +18,7 @@ exports.postAddProduct = async (req, res, next) => {
     if (!errors.isEmpty()) {
         return res.status(442).render('admin/edit-product', {
             pageTitle: 'Add Product',
-            path: '/admin/edit-product',
+            path: '/admin/add-product',
             editing: false,
             product: { title, price, imageUrl, description },
             hasError: true,
@@ -40,7 +37,9 @@ exports.postAddProduct = async (req, res, next) => {
         await product.save();
         res.redirect('/admin/products');
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error); // next with error parameter will ignore all other middlewares and return error handling middle ware
     }
 };
 
@@ -65,7 +64,9 @@ exports.getEditProduct = async (req, res, next) => {
             validationErrors: [],
         });
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };
 
@@ -101,7 +102,9 @@ exports.postEditProduct = async (req, res, next) => {
         });
         res.redirect('/admin/products');
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };
 
@@ -117,7 +120,9 @@ exports.getProducts = async (req, res, next) => {
             path: '/admin/products',
         });
     } catch (err) {
-        console.log(er);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };
 
@@ -126,6 +131,8 @@ exports.postDeleteProduct = async (req, res, next) => {
         await Product.deleteOne({ _id: req.body.productId, userId: req.user._id });
         res.redirect('/admin/products');
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };

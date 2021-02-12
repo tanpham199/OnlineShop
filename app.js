@@ -14,6 +14,7 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 const User = require('./models/user');
+const { error } = require('console');
 
 const app = express();
 const csrfProtection = csrf();
@@ -37,7 +38,9 @@ app.use(async (req, res, next) => {
         }
         return next();
     } catch (err) {
-        throw new Error(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 });
 // every views that are rendered will have these variables
@@ -49,7 +52,13 @@ app.use((req, res, next) => {
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
-app.use(errorController.get404);
+app.get('/500', errorController.get500);
+app.use(errorController.get404); // this catches all unexpected URL
+
+// this (middleware with 4 parameters) will be called when next(error) is called
+app.use((error, req, res, next) => {
+    res.redirect('/500');
+});
 
 mongoose
     .connect(MONGODB_URI, {

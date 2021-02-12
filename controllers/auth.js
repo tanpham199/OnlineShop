@@ -45,7 +45,9 @@ exports.postLogin = async (req, res, next) => {
             res.redirect('/login');
         }
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };
 
@@ -98,7 +100,9 @@ exports.postSignup = async (req, res, next) => {
         });
         res.redirect('/login');
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };
 
@@ -137,7 +141,9 @@ exports.postReset = (req, res, next) => {
                 `,
             });
         } catch (err) {
-            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
         }
     });
 };
@@ -157,7 +163,9 @@ exports.getNewPassword = async (req, res, next) => {
             token: token,
         });
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };
 
@@ -175,6 +183,8 @@ exports.postNewPassword = async (req, res, next) => {
         await user.save();
         res.redirect('/login');
     } catch (err) {
-        console.log(err);
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
     }
 };
