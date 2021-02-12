@@ -31,11 +31,13 @@ app.use(async (req, res, next) => {
     try {
         if (req.session.user) {
             const user = await User.findById(req.session.user._id);
-            req.user = user;
+            if (user) {
+                req.user = user;
+            }
         }
         return next();
     } catch (err) {
-        console.log(err);
+        throw new Error(err);
     }
 });
 // every views that are rendered will have these variables
