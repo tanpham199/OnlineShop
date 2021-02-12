@@ -28,6 +28,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'my secret', resave: false, saveUninitialized: false, store: store }));
 app.use(csrfProtection);
 app.use(flash());
+// every views that are rendered will have these variables
+app.use((req, res, next) => {
+    res.locals.isAuthenticated = req.session.isLoggedIn;
+    res.locals.csrfToken = req.csrfToken();
+    next();
+});
 app.use(async (req, res, next) => {
     try {
         if (req.session.user) {
@@ -43,21 +49,18 @@ app.use(async (req, res, next) => {
         return next(error);
     }
 });
-// every views that are rendered will have these variables
-app.use((req, res, next) => {
-    res.locals.isAuthenticated = req.session.isLoggedIn;
-    res.locals.csrfToken = req.csrfToken();
-    next();
-});
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 app.get('/500', errorController.get500);
 app.use(errorController.get404); // this catches all unexpected URL
 
-// this (middleware with 4 parameters) will be called when next(error) is called
+// this (middleware with 4 parameters) will be called when next(error) is called or an error is catched
 app.use((error, req, res, next) => {
-    res.redirect('/500');
+    res.status(500).render('500', {
+        pageTitle: '500',
+        path: '/500',
+    });
 });
 
 mongoose
