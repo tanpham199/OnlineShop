@@ -1,13 +1,13 @@
 {
-  "name": "nodejs-complete-guide",
+  "name": "my-shop",
   "version": "1.0.0",
-  "description": "Complete Node.js Guide",
+  "description": "SSR",
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js"
   },
-  "author": "Maximilian Schwarzmüller",
+  "author": "Tân Phạm",
   "license": "ISC",
   "keywords": [],
   "dependencies": {
@@ -22,7 +22,10 @@
     "express-session": "^1.17.1",
     "express-validator": "^6.9.2",
     "mongodb": "^3.6.4",
-    "mongoose": "^5.11.15"
+    "mongoose": "^5.12.7",
+    "multer": "^1.4.2",
+    "pdfkit": "^0.11.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"

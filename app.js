@@ -1,10 +1,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const multer = require('multer');
 const session = require('express-session');
 const csrf = require('csurf');
 const flash = require('connect-flash');
 const mongoose = require('mongoose');
 const MongoDbStore = require('connect-mongodb-session')(session);
+const { v4: uuidv4 } = require('uuid');
 
 const path = require('path');
 const MONGODB_URI =
@@ -14,7 +16,6 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 const User = require('./models/user');
-const { error } = require('console');
 
 const app = express();
 const csrfProtection = csrf();
@@ -22,9 +23,30 @@ const store = new MongoDbStore({
     uri: MONGODB_URI,
     collection: 'sessions',
 });
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'images');
+    },
+    filename: function (req, file, cb) {
+        cb(null, uuidv4() + '.' + file.mimetype.split('/')[1]);
+    },
+});
+const fileFilter = (req, file, cb) => {
+    if (
+        file.mimetype === 'image/jpeg' ||
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/png'
+    ) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+};
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(multer({ storage, fileFilter }).single('image'));
+app.use(express.static(path.join(__dirname, 'public'))); // this turns public into a static global folder (not includes /public when called)
+app.use('/images', express.static(path.join(__dirname, 'images'))); // this turns images into a static global folder (includes /images when called)
 app.use(session({ secret: 'my secret', resave: false, saveUninitialized: false, store: store }));
 app.use(csrfProtection);
 app.use(flash());
@@ -57,6 +79,8 @@ app.use(errorController.get404); // this catches all unexpected URL
 
 // this (middleware with 4 parameters) will be called when next(error) is called or an error is catched
 app.use((error, req, res, next) => {
+    console.log('WATCH ME');
+    console.log(error);
     res.status(500).render('500', {
         pageTitle: '500',
         path: '/500',

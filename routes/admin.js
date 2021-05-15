@@ -15,7 +15,6 @@ router.post(
             .isLength({ min: 3 })
             .withMessage('a title with at least 3 characters')
             .trim(),
-        body('imageUrl', 'a valid image URL').isURL(),
         body('price', 'a valid price').isFloat(),
         body('description', 'a description with at least 3 characters').isLength({ min: 5 }).trim(),
     ],
@@ -33,13 +32,12 @@ router.post(
             .isLength({ min: 3 })
             .withMessage('a title with at least 3 characters')
             .trim(),
-        body('imageUrl', 'a valid image URL').isURL(),
         body('price', 'a valid price').isFloat(),
         body('description', 'a description with at least 3 characters').isLength({ min: 5 }).trim(),
     ],
     isAuth,
     adminController.postEditProduct
 );
-router.post('/delete-product', isAuth, adminController.postDeleteProduct);
+router.delete('/product/:productId', isAuth, adminController.deleteProduct);
 
 module.exports = router;
